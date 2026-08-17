@@ -1,0 +1,63 @@
+# Relativistic Quantum Tokens: Circuit Explanations
+
+This document provides a formal exposition of the quantum circuits utilized in the theoretical construction of relativistic quantum tokens. Each section details the operational principles, state evolution, and cryptographic significance of the underlying protocols.
+
+## 1. Linear Grover Hash
+
+The linear Grover hash circuit implements the foundational amplitude amplification process for finding marked states in an unstructured search space.
+
+![Grover Linear](grover_linear.png)
+
+### State Evolution and Marking
+The circuit initializes a superposition of all possible states utilizing a layer of Hadamard gates, transforming the initial state $|0\rangle^{\otimes n}$ into the uniform superposition $\frac{1}{\sqrt{2^n}} \sum_{x \in \{0,1\}^n} |x\rangle$. The Oracle operator, implemented via a multi-controlled Z gate, imparts a selective $\pi$ phase shift to the target state (in this example, $|111\rangle$). This phase inversion algebraically marks the target basis state without altering the probability amplitudes.
+
+### Cryptographic Role
+The diffusion operator (or inversion about the mean) subsequently amplifies the amplitude of the marked state while diminishing the amplitudes of the non-target states. In the context of quantum hashing, this amplitude amplification highlights the mechanism by which quantum algorithms can exhibit a quadratic speedup in pre-image resistance. However, a purely linear Oracle operator is susceptible to algebraic reduction techniques.
+
+## 2. Grover's Hash with Feistel Oracle (Non-Linear)
+
+To mitigate algebraic vulnerabilities in the linear formulation, a non-linear Oracle constructed through a Feistel-like network is proposed.
+
+![Grover Feistel](grover_feistel.png)
+
+### Algebraic Non-Linearity
+The Feistel quantum circuit partitions the qubit register into two halves: a left register ($L$) and a right register ($R$). The sub-circuit applies parameterized single-qubit rotations, $R_y(\theta)$ and $R_z(\phi)$, to the right register. These continuous-parameter rotations disrupt the linearity of the Boolean transformations typical in conventional quantum logic blocks. 
+
+### Cryptographic Role
+Following the non-linear transformation on $R$, a sequence of CNOT gates applies the XOR operation into the left register, $L \oplus f(R)$. A swap operation then exchanges the registers. This non-linear, multi-round Feistel network ensures that the Oracle mapping is mathematically robust against cryptanalysis relying on linear approximation. The resulting hash function inherits the preimage-resistance of Grover's search while maximizing confusion and diffusion, properties critical for securing the token's uniqueness against advanced quantum adversaries.
+
+## 3. BB84 Protocol
+
+The BB84 quantum key distribution (QKD) protocol serves as the core mechanism for secure conjugate coding.
+
+![BB84 Protocol](bb84.png)
+
+### Conjugate Coding
+The BB84 protocol exploits the indistinguishability of non-orthogonal quantum states to guarantee information-theoretic security. The sender, Alice, prepares a quantum state in one of two mutually unbiased bases (e.g., the computational $Z$ basis or the diagonal $X$ basis). In this representation, Alice prepares the $|-\rangle$ state by applying an $X$ gate followed by a Hadamard gate. 
+
+### Cryptographic Role
+Upon transmission, Bob chooses a basis for measurement. When Bob measures in the $X$ basis (applying a Hadamard prior to measurement), his results are perfectly correlated with Alice's preparation. According to the no-cloning theorem, any eavesdropper attempting to intercept and copy the qubit will inadvertently collapse the state, introducing detectable error rates. This physical guarantee of secrecy is a prerequisite for authenticating quantum tokens between parties connected via untrusted channels.
+
+## 4. Quantum Clock Synchronization (QCS)
+
+The temporal validation of quantum tokens relies on high-fidelity time synchronization among network nodes.
+
+![Quantum Clock Synchronization](qcs.png)
+
+### Temporal Decoherence and Entanglement
+The QCS circuit illustrates the foundational principle of entanglement-assisted clock synchronization. It prepares a maximally entangled Bell state, specifically $|\Phi^+\rangle = \frac{1}{\sqrt{2}}(|00\rangle + |11\rangle)$, through the sequential application of a Hadamard and a CNOT gate. The spatial separation and signal propagation are modeled via a delay operation applied to the receiving node's qubit. 
+
+### Cryptographic Role
+The delay induces temporal phase shifts and potential decoherence. By distributing entangled pairs and performing correlated standard basis measurements, nodes can statistically infer and compensate for relative clock skews. The strict non-local correlations of the Bell pair provide an information-theoretic advantage over classical synchronization protocols (e.g., NTP), bounded by the Heisenberg uncertainty principle. This precision is essential to enforce the strict relativistic causal constraints governing token verification.
+
+## 5. Superdense Coding
+
+Superdense coding optimizes the classical channel bandwidth required to transmit cryptographic hashes.
+
+![Superdense Coding](superdense.png)
+
+### State Evolution
+Superdense coding exploits pre-shared entanglement to transmit two bits of classical information utilizing a single physical qubit. An initial $|\Phi^+\rangle = \frac{1}{\sqrt{2}}(|00\rangle + |11\rangle)$ state is distributed. To encode the classical message '11', Alice applies an $X$ gate (bit flip) and a $Z$ gate (phase flip) to her qubit, transforming the shared state to $|\Psi^-\rangle = \frac{1}{\sqrt{2}}(|01\rangle - |10\rangle)$. 
+
+### Information-Theoretic Advantages
+Upon receiving Alice's qubit, Bob applies a decoding sequence—a CNOT gate followed by a Hadamard gate—projecting the bipartite state back into the computational basis corresponding to the original two bits. This doubles the classical channel capacity bounded by Holevo's theorem for unentangled systems. In the relativistic quantum token framework, superdense coding ensures rapid, high-bandwidth transmission of classical verification certificates alongside the quantum state, minimizing temporal latency and maintaining strict causal order during the authentication sequence.

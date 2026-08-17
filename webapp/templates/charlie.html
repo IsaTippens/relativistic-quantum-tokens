@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Charlie's Terminal</h2>
+
+{% if payload %}
+<div class="card">
+    <h3>Received Payload</h3>
+    <form action="{{ url_for('charlie_settle') }}" method="POST">
+        <div class="form-group">
+            <label>Serial Number (readonly)</label>
+            <input type="text" name="serial_number" value="{{ payload.serial_number }}" readonly>
+        </div>
+        <div class="form-group">
+            <label>AAH Hash (readonly)</label>
+            <input type="text" name="hash" value="{{ payload.hash }}" readonly>
+        </div>
+        
+        <h4>Tamper Toggle</h4>
+        <p>Edit these fields before settling to simulate an adversarial attack.</p>
+        <div class="form-group">
+            <label for="expiration_timestamp">Expiration Timestamp</label>
+            <input type="text" id="expiration_timestamp" name="expiration_timestamp" value="{{ payload.expiration_timestamp }}">
+        </div>
+        <div class="form-group">
+            <label for="target_geohash">Target Geohash</label>
+            <input type="text" id="target_geohash" name="target_geohash" value="{{ payload.target_geohash }}">
+        </div>
+
+        <h4>Local Node State</h4>
+        <div class="form-group">
+            <label for="current_time">Current Time</label>
+            <input type="text" id="current_time" name="current_time" value="{{ current_time }}">
+        </div>
+        <div class="form-group">
+            <label for="current_geohash">Current Geohash</label>
+            <input type="text" id="current_geohash" name="current_geohash" value="{{ current_geohash }}">
+        </div>
+
+        <button type="submit">Settle with Bank</button>
+    </form>
+</div>
+{% else %}
+<p>No payload received.</p>
+{% endif %}
+
+{% endblock %}

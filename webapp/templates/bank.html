@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Bank Dashboard</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Serial Number</th>
+            <th>Collapsed State</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in ledger %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td><strong>{{ row[2] }}</strong></td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3">No tokens in ledger.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

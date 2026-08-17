@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /home/isati/dev/uni/projects/protocol/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/isati/dev/uni/projects/protocol
+plugins: asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 5 items
+
+tests/test_e2e_quantum_token.py::test_full_settlement_flow PASSED        [ 20%]
+tests/test_e2e_quantum_token.py::test_geographic_spoofing PASSED         [ 40%]
+tests/test_e2e_quantum_token.py::test_temporal_expiration PASSED         [ 60%]
+tests/test_e2e_quantum_token.py::test_data_tampering PASSED              [ 80%]
+tests/test_e2e_quantum_token.py::test_double_spend PASSED                [100%]
+
+=============================== warnings summary ===============================
+tests/test_e2e_quantum_token.py: 16 warnings
+  /home/isati/dev/uni/projects/protocol/venv/lib/python3.12/site-packages/stevedore/extension.py:340: DeprecationWarning: Since backends now support running jobs that contain both fractional gates and dynamic circuit, IBMFractionalTranslationPlugin is deprecated as of qiskit-ibm-runtime 0.42.0 and will be removed no sooner than 3 months after the release date. Use IBMDynamicFractionalTranslationPlugin instead.
+    obj = plugin(*invoke_args, **invoke_kwds)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 5 passed, 16 warnings in 4.70s ========================

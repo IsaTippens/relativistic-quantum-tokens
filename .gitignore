@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+
+# Test / tooling caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime artifacts
+webapp/bank.db
+webapp.log
+webapp.pid
+*.log
+*.pid
+
+# Secrets / credentials
+.env
+.env.*
+*.pem
+*.key
+.qiskit/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
