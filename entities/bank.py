@@ -2,6 +2,7 @@ import uuid
 import logging
 from quantum_circuits.bb84_simulator import BB84Simulator
 from quantum_circuits.quantum_walk_hash import QuantumWalkHash
+from quantum_circuits.superdense_simulator import SuperdenseSimulator, encode_payload, decode_payload
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ class Bank:
         self.ledger = {}
         self.sampler = sampler
         self.quantum_hash = QuantumWalkHash()
+        self.channel = SuperdenseSimulator()
 
     def perform_bb84_exchange(self, alice) -> str:
         """
@@ -38,10 +40,21 @@ class Bank:
         logger.info(f"Bank: Issued new Serial Number: {serial_number}")
         return serial_number
 
-    def verify_settlement(self, payload: dict) -> bool:
+    def send_serial_number(self, serial_number: str) -> str:
         """
-        Verifies the settlement payload from the merchant.
+        Transmits an issued serial number to Alice via superdense coding:
+        two classical bits per transmitted qubit off pre-shared Bell pairs.
         """
+        logger.info("Bank: Transmitting Serial Number to Alice via superdense coding...")
+        return self.channel.transmit_bits(encode_payload({"serial_number": serial_number}))
+
+    def verify_settlement(self, transmission: str) -> bool:
+        """
+        Verifies a settlement bundle received from the merchant over the
+        superdense-coded channel.
+        """
+        payload = decode_payload(transmission)
+
         serial_number = payload.get("serial_number")
         provided_hash = payload.get("hash")
         location = payload.get("location")

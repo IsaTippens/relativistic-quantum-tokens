@@ -4,7 +4,7 @@ import asyncio
 import threading
 from quantum_circuits.bb84_simulator import BB84Simulator
 from quantum_circuits.grover_hash import GroverHash
-from quantum_circuits.superdense_simulator import SuperdenseSimulator, decode_payload
+from quantum_circuits.superdense_simulator import SuperdenseSimulator, encode_payload, decode_payload
 
 class BankNode:
     def __init__(self, db_path=':memory:'):
@@ -34,10 +34,20 @@ class BankNode:
         serial_number = str(uuid.uuid4())
         self.issue_serial_number(serial_number, shared_secret)
         
-        # In a real protocol Alice would participate, here we just return it to her
+        # BB84 leaves the sifted key in both parties' hands; a key is never
+        # put on a channel. The serial number is classical data in transit,
+        # so it reaches Alice via superdense coding.
         alice.shared_secret = shared_secret
-        alice.serial_number = serial_number
+        alice.receive_serial_number(self.send_serial_number(serial_number))
         return serial_number, shared_secret
+
+    def send_serial_number(self, serial_number: str) -> str:
+        """
+        Transmits an issued serial number to Alice via superdense coding:
+        the classical bits are encoded onto half as many qubits drawn from
+        pre-shared Bell pairs.
+        """
+        return self.channel.transmit_bits(encode_payload({'serial_number': serial_number}))
 
     def issue_serial_number(self, serial_number, shared_secret):
         self.cursor.execute(

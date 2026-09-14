@@ -1,11 +1,16 @@
 from quantum_circuits.grover_hash import GroverHash
-from quantum_circuits.superdense_simulator import SuperdenseSimulator, encode_payload
+from quantum_circuits.superdense_simulator import SuperdenseSimulator, encode_payload, decode_payload
 
 class AliceNode:
     def __init__(self):
         self.shared_secret = None
         self.serial_number = None
         self.channel = SuperdenseSimulator()
+
+    def receive_serial_number(self, transmission: str) -> str:
+        """Decodes the superdense-coded issuance message from the Bank."""
+        self.serial_number = decode_payload(transmission)['serial_number']
+        return self.serial_number
 
     def program_token(self, target_geohash: str, expiration_timestamp: float, hash_length: int = 4) -> dict:
         if not self.shared_secret or not self.serial_number:

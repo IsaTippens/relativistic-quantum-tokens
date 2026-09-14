@@ -1,5 +1,6 @@
 import logging
 from quantum_circuits.quantum_walk_hash import QuantumWalkHash
+from quantum_circuits.superdense_simulator import SuperdenseSimulator, encode_payload, decode_payload
 
 logger = logging.getLogger(__name__)
 
@@ -12,24 +13,29 @@ class AliceWallet:
         self.serial_number = None
         self.sampler = sampler
         self.quantum_hash = QuantumWalkHash()
+        self.channel = SuperdenseSimulator()
 
     def set_shared_secret(self, secret: str):
         self.shared_secret = secret
         logger.info("Alice: Shared secret received from BB84 exchange.")
 
-    def receive_serial_number(self, serial: str):
-        self.serial_number = serial
-        logger.info("Alice: Received Serial Number from Bank.")
+    def receive_serial_number(self, transmission: str) -> str:
+        """Decodes the superdense-coded issuance message from the Bank."""
+        self.serial_number = decode_payload(transmission)["serial_number"]
+        logger.info("Alice: Received Serial Number from Bank over the superdense channel.")
+        return self.serial_number
 
-    def spend_at_merchant(self, merchant) -> dict:
+    def spend_at_merchant(self, merchant) -> str:
         """
-        Alice interacts with the Merchant (Charlie) to get Location and Timestamp,
-        then computes the Quantum Hash and hands over the token.
+        Alice reads the Merchant's location and timestamp off the
+        superdense-coded channel, computes the Quantum Hash, and hands the
+        token back as a superdense transmission.
         """
         logger.info(f"Alice: Attempting to spend token at Merchant ({merchant.name})...")
-        
-        location = merchant.get_location()
-        timestamp = merchant.get_timestamp()
+
+        quote = decode_payload(merchant.send_quote())
+        location = quote["location"]
+        timestamp = quote["timestamp"]
         
         logger.info(f"Alice: Received merchant details - Loc: {location}, Time: {timestamp}")
         
@@ -44,12 +50,12 @@ class AliceWallet:
         
         logger.info(f"Alice: Generated token Hash: {token_hash}")
         
-        # Payload given to Charlie
+        # Payload handed to Charlie over the superdense-coded channel
         payload = {
             "serial_number": self.serial_number,
             "hash": token_hash,
             "location": location,
             "timestamp": timestamp
         }
-        
-        return payload
+
+        return self.channel.transmit_bits(encode_payload(payload))

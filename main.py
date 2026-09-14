@@ -36,16 +36,16 @@ def main():
     # 3. Issuance
     logger.info("--- Phase 2: Token Issuance ---")
     serial_number = bank.issue_serial_number(shared_secret)
-    alice.receive_serial_number(serial_number)
+    alice.receive_serial_number(bank.send_serial_number(serial_number))
     
     # 4. The Spend
     logger.info("--- Phase 3: The Spend ---")
     try:
-        token_payload = alice.spend_at_merchant(charlie)
+        token_transmission = alice.spend_at_merchant(charlie)
         
         # 5. Settlement and Verification
         logger.info("--- Phase 4: Settlement ---")
-        success = charlie.receive_token_and_settle(token_payload, bank)
+        success = charlie.receive_token_and_settle(token_transmission, bank)
         
         if success:
             logger.info("=== Protocol Execution Successful ===")
