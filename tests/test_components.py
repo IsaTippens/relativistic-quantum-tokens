@@ -5,6 +5,7 @@ from quantum_circuits.grover_hash import GroverHash, GroverNonLinearHash
 from entities.bank import Bank
 from entities.alice_wallet import AliceWallet
 from entities.merchant import Merchant
+from quantum_circuits.superdense_simulator import encode_payload, decode_payload
 
 def test_bb84_key_exchange():
     sim = BB84Simulator(num_bits=64)
@@ -87,24 +88,43 @@ def test_grover_nonlinear_hash_different_inputs():
     assert hash1 != hash2
 
 def test_grover_nonlinear_hash_seed_robustness():
+    """Determinism requires the amplification to actually concentrate.
+
+    With one marked state out of 2**n, round(pi/4*sqrt(2**n)) iterations are
+    needed. At the optimal count the argmax is stable across simulator seeds;
+    at the shallower default the distribution stays near-uniform and the argmax
+    is sampling noise. Both halves are asserted so the tradeoff is explicit.
+    """
     from qiskit_aer import AerSimulator
     from qiskit import transpile
-    
-    gn_hash = GroverNonLinearHash()
+    from quantum_circuits.grover_hash import optimal_grover_iterations
+
     payload = "test_payload_123"
-    qc = gn_hash.build_circuit(payload)
-    
     sim = AerSimulator()
-    t_qc = transpile(qc, backend=sim)
-    
-    hashes = set()
-    for seed in range(10):
-        job = sim.run(t_qc, shots=1024, seed_simulator=seed)
-        counts = job.result().get_counts()
-        best_hash = max(counts, key=counts.get)
-        hashes.add(best_hash)
-        
-    assert len(hashes) == 1, f"Expected deterministic hash regardless of seed, but got: {hashes}"
+
+    def top_hashes(iterations):
+        qc = GroverNonLinearHash(grover_iterations=iterations).build_circuit(payload)
+        t_qc = transpile(qc, backend=sim)
+        found = set()
+        peaks = []
+        for seed in range(10):
+            counts = sim.run(t_qc, shots=1024, seed_simulator=seed).result().get_counts()
+            best = max(counts, key=counts.get)
+            found.add(best)
+            peaks.append(counts[best] / 1024)
+        return found, sum(peaks) / len(peaks)
+
+    assert optimal_grover_iterations(8) == 13
+    stable, peak = top_hashes(optimal_grover_iterations(8))
+    assert len(stable) == 1, f"optimal rotation must be deterministic, got {stable}"
+    assert peak > 0.9, f"optimal rotation must concentrate, peak was {peak:.3f}"
+
+    under, under_peak = top_hashes(2)
+    assert under_peak < 0.2, (
+        "2 iterations at 8 bits should leave the distribution flat; "
+        f"peak was {under_peak:.3f}")
+
+
 def test_full_protocol_flow():
     bank = Bank()
     alice = AliceWallet()
@@ -114,20 +134,21 @@ def test_full_protocol_flow():
     secret = bank.perform_bb84_exchange(alice)
     assert alice.shared_secret == secret
     
-    # Issuance
+    # Issuance: the serial reaches Alice over the superdense-coded channel
     serial = bank.issue_serial_number(secret)
-    alice.receive_serial_number(serial)
+    assert alice.receive_serial_number(bank.send_serial_number(serial)) == serial
     assert alice.serial_number == serial
     assert serial in bank.ledger
-    
-    # Spend
-    payload = alice.spend_at_merchant(charlie)
+
+    # Spend: Alice hands Charlie a superdense transmission, not a plain dict
+    transmission = alice.spend_at_merchant(charlie)
+    payload = decode_payload(transmission)
     assert "serial_number" in payload
     assert "hash" in payload
-    assert payload["location"] == charlie.get_location()
-    
+    assert payload["location"] == charlie.location
+
     # Settle
-    is_valid = charlie.receive_token_and_settle(payload, bank)
+    is_valid = charlie.receive_token_and_settle(transmission, bank)
     assert is_valid == True
 
 def test_invalid_settlement():
@@ -137,12 +158,14 @@ def test_invalid_settlement():
 
     secret = bank.perform_bb84_exchange(alice)
     serial = bank.issue_serial_number(secret)
-    alice.receive_serial_number(serial)
-    
-    payload = alice.spend_at_merchant(charlie)
-    
-    # Tamper with payload hash
+    alice.receive_serial_number(bank.send_serial_number(serial))
+
+    transmission = alice.spend_at_merchant(charlie)
+
+    # Tamper with the hash Charlie forwards, then re-transmit it
+    payload = decode_payload(transmission)
     payload["hash"] = "0000" if payload["hash"] != "0000" else "1111"
-    
-    is_valid = charlie.receive_token_and_settle(payload, bank)
+    tampered = charlie.channel.transmit_bits(encode_payload(payload))
+
+    is_valid = charlie.receive_token_and_settle(tampered, bank)
     assert is_valid == False
