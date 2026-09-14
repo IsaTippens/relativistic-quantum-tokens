@@ -1,0 +1,47 @@
+{
+  "run_id": "ibmq_20260908T220749Z",
+  "created_at_utc": "2026-09-08T22:08:03.994568+00:00",
+  "channel": "ibm_quantum_platform",
+  "instance_name": "qpus",
+  "instance_region": "us-east",
+  "instance_crn": "crn:v1:bluemix:public:quantum-computing:us-east:a/05f299c07d03426ba7877a976d3539e3:3f207ef9-d163-4d76-89cb-278a6e4545d4::",
+  "backend": {
+    "name": "ibm_fez",
+    "num_qubits": 156,
+    "processor_type": {
+      "family": "Heron",
+      "revision": "2"
+    },
+    "two_qubit_gate": "cz",
+    "pending_jobs": 0,
+    "operational": true,
+    "last_calibration_utc": "2026-09-08T21:35:35+00:00",
+    "calibration_age_hours": 0.542,
+    "median_t1_us": 138.58,
+    "median_t2_us": 100.03,
+    "median_readout_error": 0.009521,
+    "median_2q_error": 0.00285,
+    "dt_seconds": 4e-09
+  },
+  "backend_survey": [
+    {
+      "name": "ibm_fez",
+      "num_qubits": 156,
+      "processor_type": {
+        "family": "Heron",
+        "revision": "2"
+      },
+      "two_qubit_gate": "cz",
+      "pending_jobs": 0,
+      "operational": true,
+      "last_calibration_utc": "2026-09-08T21:35:35+00:00",
+      "calibration_age_hours": 0.541,
+      "median_t1_us": 138.58,
+      "median_t2_us": 100.03,
+      "median_readout_error": 0.009521,
+      "median_2q_error": 0.00285,
+      "dt_seconds": 4e-09
+    }
+  ],
+  "selection_rule": "operational, >=27 qubits, calibration age <= 24 h, queue depth <= 20 pending jobs, ranked by median 2-qubit gate error then calibration freshness"
+}

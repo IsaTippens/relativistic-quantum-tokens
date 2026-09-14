@@ -1,0 +1,60 @@
+{
+  "surveyed_at_utc": "2026-09-08T22:07:38.320235+00:00",
+  "chosen": "ibm_fez",
+  "backends": [
+    {
+      "name": "ibm_kingston",
+      "num_qubits": 156,
+      "processor_type": {
+        "family": "Heron",
+        "revision": "2"
+      },
+      "two_qubit_gate": "cz",
+      "pending_jobs": 186,
+      "operational": true,
+      "last_calibration_utc": "2026-09-08T21:19:26+00:00",
+      "calibration_age_hours": 0.803,
+      "median_t1_us": 228.58,
+      "median_t2_us": 139.32,
+      "median_readout_error": 0.008911,
+      "median_2q_error": 0.002029,
+      "dt_seconds": 4e-09
+    },
+    {
+      "name": "ibm_fez",
+      "num_qubits": 156,
+      "processor_type": {
+        "family": "Heron",
+        "revision": "2"
+      },
+      "two_qubit_gate": "cz",
+      "pending_jobs": 3,
+      "operational": true,
+      "last_calibration_utc": "2026-09-08T21:35:35+00:00",
+      "calibration_age_hours": 0.533,
+      "median_t1_us": 138.58,
+      "median_t2_us": 100.03,
+      "median_readout_error": 0.009521,
+      "median_2q_error": 0.00285,
+      "dt_seconds": 4e-09
+    },
+    {
+      "name": "ibm_marrakesh",
+      "num_qubits": 156,
+      "processor_type": {
+        "family": "Heron",
+        "revision": "2"
+      },
+      "two_qubit_gate": "cz",
+      "pending_jobs": 1,
+      "operational": true,
+      "last_calibration_utc": "2026-09-08T21:30:13+00:00",
+      "calibration_age_hours": 0.623,
+      "median_t1_us": 168.87,
+      "median_t2_us": 66.95,
+      "median_readout_error": 0.012451,
+      "median_2q_error": 0.003112,
+      "dt_seconds": 4e-09
+    }
+  ]
+}
