@@ -100,10 +100,14 @@ def _round_function(qc: QuantumCircuit, right, anc, key: int, h: int, m: int) ->
             qc.x(anc[i])
 
 
-def feistel_permutation(n: int, rounds: int = 4) -> QuantumCircuit:
+def feistel_permutation(n: int, rounds: int = 4, barriers: bool = False) -> QuantumCircuit:
     """Circuit computing ``f`` in place on ``n`` qubits, ancillas returned to |0>.
 
     Register layout: QuantumRegister("x", n) then AncillaRegister("fa", n // 2).
+
+    ``barriers`` separates the rounds with a barrier. It is off by default so that
+    the circuit submitted to hardware is unchanged; it is switched on when drawing
+    the figure, where the round boundaries need to be visible and addressable.
     """
     if n < 3:
         raise ValueError("n must be at least 3 for a Feistel network")
@@ -124,6 +128,8 @@ def feistel_permutation(n: int, rounds: int = 4) -> QuantumCircuit:
             qc.cx(anc[i], left[i])
         _round_function(qc, right, anc, key, h, m)   # uncompute
         wires = wires[h:] + wires[:h]
+        if barriers and r < rounds - 1:
+            qc.barrier()
     return qc
 
 
