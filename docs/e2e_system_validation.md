@@ -42,7 +42,7 @@ Any classical interception and mutation of the payload disrupts the deterministi
 The SQLite ledger inherently rejects replay attacks. An attempt to utilize a previously consumed serial number fails due to the state having already transitioned from `ACTIVE` to `SPENT`.
 
 ### Transaction Reliability and Quantum States
-A simulation of 1000 transactions is conducted to verify transaction reliability across different secret quantum states. The bars represent transaction reliability, color-coded by the 4-bit state slices of the actual BB84 key generated during the simulation (ranging from $|0000\rangle$ to $|1111\rangle$), where the colours represent the different encoded states.
+A simulation of 1000 transactions is conducted to verify transaction reliability across different secret quantum states. Each transaction runs the full lifecycle with its own BB84 exchange, and all 1000 settled. The bars represent the measured outcome of each transaction, color-coded by the 4-bit slice of that transaction's own BB84 key (ranging from $|0000\rangle$ to $|1111\rangle$). The per-transaction record is archived in `test_artifacts/e2e_reliability.json` and is regenerated with `python scripts/measure_e2e_reliability.py`; `scripts/generate_artifacts.py` renders the figure from that file.
 
 ![Transaction Reliability](test_artifacts/transaction_reliability.png)
 

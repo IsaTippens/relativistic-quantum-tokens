@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import subprocess
 import time
 import asyncio
@@ -78,23 +79,22 @@ def main():
     plt.savefig(artifacts_dir / 'transaction_lifecycle.png')
     plt.close()
     
-    # Generate transaction_reliability.png using the BB84Simulator defined in the codebase
-    from quantum_circuits.bb84_simulator import BB84Simulator
+    # Generate transaction_reliability.png from the archived reliability run.
+    # Every bar is a measured outcome, so this reads the recorded per-transaction
+    # results instead of assuming them. Regenerate the input with:
+    #   python scripts/measure_e2e_reliability.py
+    reliability_path = artifacts_dir / "e2e_reliability.json"
+    if not reliability_path.exists():
+        raise SystemExit(
+            f"{reliability_path} is missing; run scripts/measure_e2e_reliability.py first")
     
-    num_transactions = 1000
-    required_bits = num_transactions * 4
-    
-    shared_key = ""
-    sim = BB84Simulator(num_bits=2000)
-    while len(shared_key) < required_bits:
-        shared_key += sim.generate_shared_secret()
-        
-    shared_key = shared_key[:required_bits]
-    chunks = [shared_key[i:i+4] for i in range(0, required_bits, 4)]
-    transaction_states = [f"|{chunk}⟩" for chunk in chunks]
+    run = json.loads(reliability_path.read_text())
+    records = run["records"]
+    num_transactions = run["n"]
+    transaction_states = [f"|{record['key_slice']}⟩" for record in records]
+    reliability = [100.0 if record["success"] else 0.0 for record in records]
     
     states = [f"|{format(i, '04b')}⟩" for i in range(16)]
-    reliability = [100] * num_transactions
     
     cmap = plt.get_cmap('tab20')
     state_colors = {state: cmap(i) for i, state in enumerate(states)}
@@ -118,6 +118,7 @@ def main():
     
     plt.savefig(artifacts_dir / 'transaction_reliability.png')
     plt.close()
+    print(f"Reliability: {run['settled']}/{num_transactions} transactions settled")
     
     # Remove old edge_case_rejection_rates.png if it exists
     old_plot_path = artifacts_dir / 'edge_case_rejection_rates.png'
